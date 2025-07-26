@@ -123,7 +123,7 @@ spec:
 4. Продемонстрировать состояние пода до и после запуска сервиса.
 
 <details>
-  <summary>service.yaml</summary>
+  <summary>nginx-deployment.yaml</summary>
   
 ```
 apiVersion: apps/v1
@@ -178,7 +178,7 @@ spec:
 </details>
 
 <details>
-  <summary>test-pod.yaml</summary>
+  <summary>nginx-service.yaml</summary>
   
 ```
 apiVersion: v1
