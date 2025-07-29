@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: dual-container-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dual-container-app
+  template:
+    metadata:
+      labels:
+        app: dual-container-app
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:1.25
+        ports:
+        - containerPort: 80
+      - name: multitool-container
+        image: busyboxplus:curl
+        ports:
+        - containerPort: 8080
+        command: ['sh', '-c', 'echo "Hello from multitool!" > /tmp/index.html && httpd -p 8080 -h /tmp && tail -f /dev/null']
