@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-exchange
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: data-exchange 
+  template:
+    metadata:
+      labels:
+        app: data-exchange
+    spec:
+      containers:
+      - name: busybox-writer
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args: 
+          - |
+            while true; do
+              echo "$(date) - Data written by busybox" >> /shared-data/output.log;
+              sleep 5;
+            done
+        volumeMounts:
+        - name: shared-data
+          mountPath: /shared-data
+
+      - name: multitool-reader
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            while [ ! -f /shared-data/output.log ]; do
+              echo "Waiting for file to be created..."
+              sleep 2
+            done
+            tail -f /shared-data/output.log
+        volumeMounts:
+        - name: shared-data
+          mountPath: /shared-data
+
+      volumes:
+      - name: shared-data
+        emptyDir: {} 

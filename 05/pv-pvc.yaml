@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /mnt/data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-pvc
+spec:
+  volumeName: local-pv
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-exchange-pvc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-exchange-pvc
+  template:
+    metadata:
+      labels:
+        app: data-exchange-pvc
+    spec:
+      containers:
+      - name: busybox-writer
+        image: busybox
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            while true; do
+              echo "$(date) - Data written by busybox" >> /shared-data/output.log;
+              sleep 5;
+            done
+        volumeMounts:
+        - name: shared-storage
+          mountPath: /shared-data
+
+      - name: multitool-reader
+        image: gcr.io/google-containers/busybox:1.27
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            while [ ! -f /shared-data/output.log ]; do
+              echo "Waiting for output.log..."
+              sleep 2
+            done
+            tail -f /shared-data/output.log
+        volumeMounts:
+        - name: shared-storage
+          mountPath: /shared-data
+
+      volumes:
+      - name: shared-storage
+        persistentVolumeClaim:
+          claimName: data-pvc
