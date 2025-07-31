@@ -1,6 +1,5 @@
 # Домашнее задание к занятию «Хранение в K8s»
 
-
 ### Цель задания
 
 Научиться работать с хранилищами в тестовой среде Kubernetes:
@@ -18,7 +17,6 @@
 1. Создать Deployment приложения, состоящего из контейнеров busybox и multitool.
 2. Настроить busybox на запись данных каждые 5 секунд в некий файл в общей директории.
 3. Обеспечить возможность чтения файла контейнером multitool.
-
 
 <details>
   <summary>containers-data-exchange.yaml</summary>
@@ -72,7 +70,6 @@ spec:
 ```
 </details>
 
-
 ![01](https://github.com/Myash-New/Kubernetes/blob/main/05/01.jpg)
 ![02](https://github.com/Myash-New/Kubernetes/blob/main/05/02.jpg)
 ![03](https://github.com/Myash-New/Kubernetes/blob/main/05/03.jpg)
@@ -94,6 +91,7 @@ spec:
   <summary>pv-pvc.yaml</summary>
   
 ---
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -107,7 +105,9 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/data
+
 ---
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -120,7 +120,9 @@ spec:
   resources:
     requests:
       storage: 1Gi
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -168,7 +170,6 @@ spec:
         persistentVolumeClaim:
           claimName: data-pvc
  ```
-
 </details>
 
 ![04](https://github.com/Myash-New/Kubernetes/blob/main/05/04.jpg)
@@ -217,7 +218,9 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: local-sc
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -264,8 +267,8 @@ spec:
       - name: shared-storage
         persistentVolumeClaim:
           claimName: data-pvc-sc
-```
 
+```
 </details>       
 
 <details>
@@ -297,6 +300,5 @@ spec:
 ```
 
 </details> 
-
 
 ![06](https://github.com/Myash-New/Kubernetes/blob/main/05/06.jpg)
