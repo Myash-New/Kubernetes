@@ -298,4 +298,5 @@ spec:
 
 </details> 
 
+
 ![06](https://github.com/Myash-New/Kubernetes/blob/main/05/06.jpg)
