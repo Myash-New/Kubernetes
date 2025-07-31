@@ -169,7 +169,9 @@ spec:
 Результат:
 
 Status: Released, а не Available.
+
 Reclaim Policy: Retain — значит, PV не удаляется автоматически (политика Retain требует ручного удаления)
+
 Поле Claim становится пустым, но данные на диске остаются:
 
 ![05](https://github.com/Myash-New/Kubernetes/blob/main/05/05.jpg)
@@ -286,8 +288,7 @@ spec:
           operator: In
           values:
           - vm2
-
-```
+    ```
 </details> 
 
 ![06](https://github.com/Myash-New/Kubernetes/blob/main/05/06.jpg)
