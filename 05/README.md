@@ -158,7 +158,6 @@ spec:
         volumeMounts:
         - name: shared-storage
           mountPath: /shared-data
-
       volumes:
       - name: shared-storage
         persistentVolumeClaim:
