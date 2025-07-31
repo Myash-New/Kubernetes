@@ -90,6 +90,7 @@ spec:
 <details>
   <summary>pv-pvc.yaml</summary>
 ---
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -103,7 +104,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/data
----
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -116,7 +117,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
----
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -162,8 +163,8 @@ spec:
       - name: shared-storage
         persistentVolumeClaim:
           claimName: data-pvc
-          
-      ```
+
+```
 </details>
 
 ![04](https://github.com/Myash-New/Kubernetes/blob/main/05/04.jpg)
