@@ -162,16 +162,15 @@ spec:
       - name: shared-storage
         persistentVolumeClaim:
           claimName: data-pvc
-    ```
+          
+      ```
 </details>
 
 ![04](https://github.com/Myash-New/Kubernetes/blob/main/05/04.jpg)
 Результат:
 
-Status: Released (а не Available)
-
+Status: Released, а не Available.
 Reclaim Policy: Retain — значит, PV не удаляется автоматически (политика Retain требует ручного удаления)
-
 Поле Claim становится пустым, но данные на диске остаются:
 
 ![05](https://github.com/Myash-New/Kubernetes/blob/main/05/05.jpg)
