@@ -104,7 +104,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/data
----
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -117,7 +117,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
----
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
