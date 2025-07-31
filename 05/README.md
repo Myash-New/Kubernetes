@@ -91,7 +91,6 @@ spec:
   <summary>pv-pvc.yaml</summary>
   
 ---
-
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -105,9 +104,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/data
-
 ---
-
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -120,9 +117,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -150,7 +145,6 @@ spec:
         volumeMounts:
         - name: shared-storage
           mountPath: /shared-data
-
       - name: multitool-reader
         image: gcr.io/google-containers/busybox:1.27
         command: ["/bin/sh", "-c"]
