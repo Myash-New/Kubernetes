@@ -131,37 +131,37 @@ spec:
     metadata:
       labels:
         app: data-exchange-pvc
-    spec:
-      containers:
-      - name: busybox-writer
-        image: busybox
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            while true; do
-              echo "$(date) - Data written by busybox" >> /shared-data/output.log;
-              sleep 5;
-            done
-        volumeMounts:
-        - name: shared-storage
+spec:
+  containers:
+     - name: busybox-writer
+       image: busybox
+       command: ["/bin/sh", "-c"]
+       args:
+         - |
+           while true; do
+             echo "$(date) - Data written by busybox" >> /shared-data/output.log;
+             sleep 5;
+           done
+       volumeMounts:
+          - name: shared-storage
           mountPath: /shared-data
-      - name: multitool-reader
-        image: gcr.io/google-containers/busybox:1.27
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            while [ ! -f /shared-data/output.log ]; do
-              echo "Waiting for output.log..."
-              sleep 2
-            done
-            tail -f /shared-data/output.log
-        volumeMounts:
-        - name: shared-storage
-          mountPath: /shared-data
-      volumes:
-      - name: shared-storage
-        persistentVolumeClaim:
-          claimName: data-pvc
+     - name: multitool-reader
+       image: gcr.io/google-containers/busybox:1.27
+       command: ["/bin/sh", "-c"]
+       args:
+         - |
+           while [ ! -f /shared-data/output.log ]; do
+             echo "Waiting for output.log..."
+             sleep 2
+           done
+           tail -f /shared-data/output.log
+       volumeMounts:
+       - name: shared-storage
+         mountPath: /shared-data
+     volumes:
+     - name: shared-storage
+       persistentVolumeClaim:
+         claimName: data-pvc
     ```
 </details>
 
@@ -196,7 +196,7 @@ metadata:
   name: local-sc
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
----
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -209,8 +209,6 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: local-sc
-
----
 
 apiVersion: apps/v1
 kind: Deployment
@@ -258,8 +256,8 @@ spec:
       - name: shared-storage
         persistentVolumeClaim:
           claimName: data-pvc-sc
-
-```
+    
+    ```
 </details>       
 
 <details>
@@ -288,8 +286,8 @@ spec:
           operator: In
           values:
           - vm2
-```
 
+```
 </details> 
 
 ![06](https://github.com/Myash-New/Kubernetes/blob/main/05/06.jpg)
