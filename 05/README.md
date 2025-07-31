@@ -163,8 +163,7 @@ spec:
       - name: shared-storage
         persistentVolumeClaim:
           claimName: data-pvc
-
-```
+    ```
 </details>
 
 ![04](https://github.com/Myash-New/Kubernetes/blob/main/05/04.jpg)
