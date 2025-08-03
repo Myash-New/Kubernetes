@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-webpage
+  namespace: default
+data:
+  index.html: |
+    <html>
+    <head>
+      <title>My Nginx Page</title>
+    </head>
+    <body>
+      <h1>Привет от Kubernetes!</h1>
+      <p>Эта страница подключена через ConfigMap.</p>
+      <p>Контейнер multitool помогает в диагностике.</p>
+    </body>
+    </html>
+  nginx.conf: |
+    events {
+    }
+    http {
+      server {
+        listen 80;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+        }
+      }
+    }

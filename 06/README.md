@@ -1,72 +1,136 @@
-# Домашнее задание к занятию «Хранение в K8s»
+# Домашнее задание к занятию «Настройка приложений и управление доступом в Kubernetes»
 
 ### Цель задания
 
-Научиться работать с хранилищами в тестовой среде Kubernetes:
-- обеспечить обмен файлами между контейнерами пода;
-- создавать **PersistentVolume** (PV) и использовать его в подах через **PersistentVolumeClaim** (PVC);
-- объявлять свой **StorageClass** (SC) и монтировать его в под через **PVC**.
+Научиться:
+- Настраивать конфигурацию приложений с помощью **ConfigMaps** и **Secrets**
+- Управлять доступом пользователей через **RBAC**
+
+Это задание поможет вам освоить ключевые механизмы Kubernetes для работы с конфигурацией и безопасностью. Эти навыки необходимы для уверенного администрирования кластеров в реальных проектах. На практике навыки используются для:
+- Хранения чувствительных данных (Secrets)
+- Гибкого управления настройками приложений (ConfigMaps) 
+- Контроля доступа пользователей и сервисов (RBAC)
 
 ------
 
-## Задание 1. Volume: обмен данными между контейнерами в поде
 
-Создать Deployment приложения, состоящего из двух контейнеров, обменивающихся данными.
+## **Задание 1: Работа с ConfigMaps**
+### **Задача**
+Развернуть приложение (nginx + multitool), решить проблему конфигурации через ConfigMap и подключить веб-страницу.
 
-### Шаги выполнения
-1. Создать Deployment приложения, состоящего из контейнеров busybox и multitool.
-2. Настроить busybox на запись данных каждые 5 секунд в некий файл в общей директории.
-3. Обеспечить возможность чтения файла контейнером multitool.
+### **Шаги выполнения**
+1. **Создать Deployment** с двумя контейнерами
+   - `nginx`
+   - `multitool`
+3. **Подключить веб-страницу** через ConfigMap
+4. **Проверить доступность**
+
+### **Решение**
 
 <details>
-  <summary>containers-data-exchange.yaml</summary>
+  <summary>configmap-web.yaml</summary>
+  
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-webpage
+  namespace: default
+data:
+  index.html: |
+    <html>
+    <head>
+      <title>My Nginx Page</title>
+    </head>
+    <body>
+      <h1>Привет от Kubernetes!</h1>
+      <p>Эта страница подключена через ConfigMap.</p>
+      <p>Контейнер multitool помогает в диагностике.</p>
+    </body>
+    </html>
+  nginx.conf: |
+    events {
+    }
+    http {
+      server {
+        listen 80;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+        }
+      }
+    }
+```
+</details>
+
+<details>
+  <summary>deployment.yaml</summary>
   
 ```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: data-exchange
+  name: nginx-multitool
+  labels:
+    app: nginx-multitool
 spec:
-  replicas: 1 
+  replicas: 1
   selector:
     matchLabels:
-      app: data-exchange 
+      app: nginx-multitool
   template:
     metadata:
       labels:
-        app: data-exchange
+        app: nginx-multitool
     spec:
       containers:
-      - name: busybox-writer
-        image: busybox
-        command: ["/bin/sh", "-c"]
-        args: 
-          - |
-            while true; do
-              echo "$(date) - Data written by busybox" >> /shared-data/output.log;
-              sleep 5;
-            done
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
         volumeMounts:
-        - name: shared-data
-          mountPath: /shared-data
+        - name: webpage
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
 
-      - name: multitool-reader
+      - name: multitool
         image: busybox
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            while [ ! -f /shared-data/output.log ]; do
-              echo "Waiting for file to be created..."
-              sleep 2
-            done
-            tail -f /shared-data/output.log
-        volumeMounts:
-        - name: shared-data
-          mountPath: /shared-data
-
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do sleep 3600; done"]
+ 
       volumes:
-      - name: shared-data
-        emptyDir: {} 
+      - name: webpage
+        configMap:
+          name: nginx-webpage
+          items:
+            - key: index.html
+              path: index.html
+      - name: nginx-config
+        configMap:
+          name: nginx-webpage
+          items:
+            - key: nginx.conf
+              path: nginx.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  labels:
+    app: nginx-multitool
+spec:
+  type: NodePort
+  selector:
+    app: nginx-multitool
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30080
 ```
 </details>
 
