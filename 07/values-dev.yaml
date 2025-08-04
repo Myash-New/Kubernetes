@@ -1,0 +1,12 @@
+images:
+  frontend:
+    tag: latest
+  backend:
+    tag: dev-latest
+  database:
+    tag: 15-alpine
+
+frontend:
+  replicas: 1
+backend:
+  replicas: 1

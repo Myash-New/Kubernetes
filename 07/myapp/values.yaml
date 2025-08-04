@@ -1,0 +1,25 @@
+images:
+  frontend:
+    repository: nginx
+    tag: 1.25
+  backend:
+    repository: mycompany/api-server
+    tag: 1.4.0
+  database:
+    repository: postgres
+    tag: 15
+
+frontend:
+  replicas: 2
+  port: 80
+
+backend:
+  replicas: 2
+  port: 8080
+
+database:
+  replicas: 1
+  port: 5432
+  dataDir: /var/lib/postgresql/data
+  storage:
+    size: 10Gi

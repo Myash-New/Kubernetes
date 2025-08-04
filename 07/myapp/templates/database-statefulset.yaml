@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-database
+  labels:
+    {{- include "myapp.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-database
+  replicas: {{ .Values.database.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-database
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-database
+    spec:
+      containers:
+      - name: postgres
+        image: "{{ .Values.images.database.repository }}:{{ .Values.database.tag }}"
+        ports:
+        - containerPort: {{ .Values.database.port }}
+        env:
+        - name: POSTGRES_DB
+          value: myapp
+        - name: POSTGRES_USER
+          value: admin
+        - name: POSTGRES_PASSWORD
+          value: password
+        volumeMounts:
+        - name: data-volume
+          mountPath: {{ .Values.database.dataDir }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data-volume
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: {{ .Values.database.storage.size }}
