@@ -17,7 +17,7 @@
 
 ### **Решение**
 
-### 🧩 Архитектура приложения
+### Архитектура приложения
 
 Приложение состоит из 4 компонентов:
 1. **База данных**
@@ -28,7 +28,7 @@
 Приложение будет упаковано в Helm-чарт для деплоя в разных окружениях (dev, stage, prod).
 
 ##  1. Расчёт ресурсов по компонентам
-|-------------------------------------------------------------------------------------------------|
+
 | Компонент       | Кол-во реплик | CPU на реплику | RAM на реплику | Общий CPU   | Общая RAM     |
 |-----------------|---------------|----------------|----------------|-------------|---------------|
 | **База данных** | 3             | 1 ядро         | 4 ГБ           | 3 ядра      | 12 ГБ         |
@@ -36,7 +36,6 @@
 | **Фронтенд**    | 5             | 0.2 ядра       | 50 МБ          | 1 ядро      | 250 МБ        |
 | **Бэкенд**      | 10            | 1 ядро         | 600 МБ         | 10 ядер     | 6 ГБ          |
 | **ИТОГО**       |               |                |                | **17 ядер** | **~30.25 ГБ** |
-|-------------------------------------------------------------------------------------------------|
 
 ##  2. Отказоустойчивость и запас
 
@@ -57,7 +56,7 @@ CPU: 17 ядер * 1.2 = 20.4 ядра
 Добавляем ресурсы на системные компоненты (на каждую ноду).
 
 ## 3. Выбораем тип и размер нод
- Будем использовать однородные ноды для унификации.
+Будем использовать однородные ноды для унификации.
   
 Для отказоустойчивости реплики БД и Кеш(StatefulSet) - разнесем на разные ноды, требуется 3 ноды для 3х реплик.
   
@@ -82,230 +81,13 @@ CPU: 17 ядер * 1.2 = 20.4 ядра
    Новое значение CPU: 20.4 ядра + 3.9 ядра = 24.3 ядра
 
     Расчет:
-       RAM: 52 / 15.7 ≈ 3,31 -> 4 ноды
-       CPU: 24.3 / 3.9 ≈ 6.23 -> **7 нод** 
+      RAM: 52 / 15.7 ≈ 3,31 -> 4 ноды
+      CPU: 24.3 / 3.9 ≈ 6.23 -> **7 нод** 
 
 # Итог с запасом: 
     
     * Количество рабочих нод: 7
-
     * Характеристики каждой рабочей ноды:
 
         vCPU (ядра): 4
-
         RAM: 16 ГБ
-
-
-
-
-  
-
-
-
-
-
-
-3. Планирование нод
-
-<details>
-  <summary>Chart.yaml</summary>
-  
-```
-apiVersion: v2
-name: myapp
-version: 1.0.0
-appVersion: "1.0"
-description: Helm chart for deploying frontend, backend, and database
-type: application
-```
-</details>
-
-<details>
-  <summary>values.yaml</summary>
-  
-```
-images:
-  frontend:
-    repository: nginx
-    tag: 1.25
-  backend:
-    repository: mycompany/api-server
-    tag: 1.4.0
-  database:
-    repository: postgres
-    tag: 15
-
-frontend:
-  replicas: 2
-  port: 80
-
-backend:
-  replicas: 2
-  port: 8080
-
-database:
-  replicas: 1
-  port: 5432
-  dataDir: /var/lib/postgresql/data
-  storage:
-    size: 10Gi
-```
-</details>
-
-<details>
-  <summary>values-dev.yaml</summary>
-  
-```
-images:
-  frontend:
-    tag: latest
-  backend:
-    tag: dev-latest
-  database:
-    tag: 15-alpine
-
-frontend:
-  replicas: 1
-backend:
-  replicas: 1
-```
-</details>
-
-<details>
-  <summary>templates/frontend-deployment.yaml</summary>
-  
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ .Release.Name }}-frontend
-  labels:
-    {{- include "myapp.labels" . | nindent 4 }}
-spec:
-  replicas: {{ .Values.frontend.replicas }}
-  selector:
-    matchLabels:
-      app: {{ .Release.Name }}-frontend
-  template:
-    metadata:
-      labels:
-        app: {{ .Release.Name }}-frontend
-    spec:
-      containers:
-      - name: frontend
-        image: "{{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag }}"
-        ports:
-        - containerPort: {{ .Values.frontend.port }}
-        resources: {}
-```
-</details>
-
-<details>
-  <summary>templates/backend-deployment.yaml</summary>
-  
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ .Release.Name }}-backend
-  labels:
-    {{- include "myapp.labels" . | nindent 4 }}
-spec:
-  replicas: {{ .Values.backend.replicas }}
-  selector:
-    matchLabels:
-      app: {{ .Release.Name }}-backend
-  template:
-    metadata:
-      labels:
-        app: {{ .Release.Name }}-backend
-    spec:
-      containers:
-      - name: backend
-        image: "{{ .Values.images.backend.repository }}:{{ .Values.images.backend.tag }}"
-        ports:
-        - containerPort: {{ .Values.backend.port }}
-        env:
-        - name: DATABASE_URL
-          value: "postgresql://{{ .Release.Name }}-database:5432/myapp"
-        resources: {}
-```
-</details>
-
-<details>
-  <summary>templates/database-statefulset.yaml</summary>
-  
-```
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: {{ .Release.Name }}-database
-  labels:
-    {{- include "myapp.labels" . | nindent 4 }}
-spec:
-  serviceName: {{ .Release.Name }}-database
-  replicas: {{ .Values.database.replicas }}
-  selector:
-    matchLabels:
-      app: {{ .Release.Name }}-database
-  template:
-    metadata:
-      labels:
-        app: {{ .Release.Name }}-database
-    spec:
-      containers:
-      - name: postgres
-        image: "{{ .Values.images.database.repository }}:{{ .Values.database.tag }}"
-        ports:
-        - containerPort: {{ .Values.database.port }}
-        env:
-        - name: POSTGRES_DB
-          value: myapp
-        - name: POSTGRES_USER
-          value: admin
-        - name: POSTGRES_PASSWORD
-          value: password
-        volumeMounts:
-        - name: data-volume
-          mountPath: {{ .Values.database.dataDir }}
-  volumeClaimTemplates:
-  - metadata:
-      name: data-volume
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: {{ .Values.database.storage.size }}
-```
-</details>
-
-
-<details>
-  <summary>_helpers.tpl</summary>
-  
-```
-{{/*
-Common labels
-*/}}
-{{- define "myapp.labels" -}}
-app: {{ .Chart.Name }}
-chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-release: {{ .Release.Name }}
-heritage: {{ .Release.Service }}
-{{- end }}
-```
-</details>
-
-![01](https://github.com/Myash-New/Kubernetes/blob/main/07/01.jpg)
-
-------
-### Задание 2. Запустить две версии в разных неймспейсах
-
-1. Подготовив чарт, необходимо его проверить. Запуститe несколько копий приложения.
-2. Одну версию в namespace=app1, вторую версию в том же неймспейсе, третью версию в namespace=app2.
-3. Продемонстрируйте результат.
-
-### **Решение**
-
-![02](https://github.com/Myash-New/Kubernetes/blob/main/07/02.jpg)
-![03](https://github.com/Myash-New/Kubernetes/blob/main/07/03.jpg)
